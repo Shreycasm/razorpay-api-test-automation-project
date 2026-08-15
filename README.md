@@ -171,6 +171,7 @@ Sensitive files such as `.env` will be excluded from version control.
 Current status:
 
 * [x] Initialize Python project with `uv`
+* [x] Implement configuration management
 
 ---
 
