@@ -176,6 +176,7 @@ Current status:
 * [x] Implement Base API Client
 * [x] Add request and response models
 * [x] Add API error handling
+* [x] Add JSON Schema validation
 
 ---
 

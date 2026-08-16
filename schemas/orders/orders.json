@@ -1,0 +1,120 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "entity",
+        "amount",
+        "amount_paid",
+        "amount_due",
+        "currency",
+        "receipt",
+        "status",
+        "attempts",
+        "notes",
+        "created_at",
+        "offer_id"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "pattern": "^order_[A-Za-z0-9]{14}$"
+        },
+        "entity": {
+            "const": "order"
+        },
+        "amount": {
+            "type": "integer",
+            "minimum": 100
+        },
+        "amount_paid": {
+            "type": [
+                "integer",
+                "null"
+            ],
+            "minimum": 0
+        },
+        "amount_due": {
+            "type": [
+                "integer",
+                "null"
+            ],
+            "minimum": 0
+        },
+        "currency": {
+            "type": "string",
+            "maxLength": 3
+        },
+        "receipt": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 40
+        },
+        "offer_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "created",
+                "attempted",
+                "paid"
+            ]
+        },
+        "attempts": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "notes": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string",
+                        "maxLength": 256
+                    },
+                    "propertyNames": {
+                        "type": "string",
+                        "maxLength": 256
+                    },
+                    "maxProperties": 15
+                },
+                {
+                    "type": "array",
+                    "maxItems": 0
+                }
+            ]
+        },
+        "created_at": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "description": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "checkout": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "offers": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}

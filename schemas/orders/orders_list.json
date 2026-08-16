@@ -1,0 +1,28 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "entity",
+        "count",
+        "items"
+    ],
+    "properties": {
+        "entity": {
+            "const": "collection"
+        },
+        "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+        },
+        "items": {
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 0,
+            "items": {
+                "$ref": "orders.json"
+            }
+        }
+    }
+}
