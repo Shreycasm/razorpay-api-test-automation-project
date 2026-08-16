@@ -53,6 +53,7 @@ def setup_logger() -> structlog.stdlib.BoundLogger:
     structlog.configure(
         wrapper_class=structlog.stdlib.BoundLogger,
         processors=[
+            structlog.contextvars.merge_contextvars,
             *_SHARED_PROCESSORS,
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
