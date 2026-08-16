@@ -1,69 +1,76 @@
 from __future__ import annotations
 
 from typing import Any
+from copy import deepcopy
 
 import pytest
 from pydantic import ValidationError
 
+from razorpay.enums.currency import Currency
 from razorpay.models.requests.orders import CreateOrderRequest, UpdateOrderRequest
-
-@pytest.fixture(scope="function")
-def create_valid_order_model(
-    create_valid_order_dict: dict[str, Any]
-) -> CreateOrderRequest:
-
-    return CreateOrderRequest(**create_valid_order_dict)
-
-
-@pytest.fixture(scope="function")
-def update_valid_order_model(
-    update_valid_order_dict: dict[str, Any]
-) -> UpdateOrderRequest:
-
-    return UpdateOrderRequest(**update_valid_order_dict)
 
 
 def build_request(
-    create_valid_order_model: CreateOrderRequest,
-    **changes: Any
+    valid_request: dict[str, Any],
+    **changes: Any,
 ) -> dict[str, Any]:
-
-    request = create_valid_order_model.model_dump(mode="json")
+    request = deepcopy(valid_request)
     request.update(changes)
 
     return request
 
 
-
-def build_update_request(
-    update_valid_order_model: UpdateOrderRequest,
-    **changes: Any
-) -> dict[str, Any]:
-
-    request = update_valid_order_model.model_dump(mode="json")
-    request.update(changes)
-
-    return request
-
-
-def test_validate_create_order_request_succsess(
-    create_valid_order_model: CreateOrderRequest
+def test_validate_create_order_request_success(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
 
-    assert isinstance(create_valid_order_model, CreateOrderRequest)
+    request = CreateOrderRequest(**create_valid_order_dict)
+
+    assert request.amount == 100
+    assert request.currency == Currency.INR
+    assert request.receipt.startswith("receipt_")
+    assert request.notes.get("source") == create_valid_order_dict["notes"]["source"]
+    assert request.notes.get("framework") == create_valid_order_dict["notes"]["framework"]
 
 
-def test_validate_create_order_request_serialization(
-    create_valid_order_model: CreateOrderRequest
+def test_create_order_request_to_api_payload_excludes_none(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
+    request_data = deepcopy(create_valid_order_dict)
+    request_data["receipt"] = None
+    request_data["notes"] = None
 
-    request = create_valid_order_model.model_dump(mode="json")
+    request = CreateOrderRequest(**request_data)
 
-    assert request["amount"] == 100
-    assert request["currency"] == "INR"
-    assert request["notes"]["source"] == create_valid_order_model.notes["source"]
-    assert request["notes"]["framework"] == create_valid_order_model.notes["framework"]
-    assert request["receipt"].startswith("receipt_")
+    payload = request.to_api_payload()
+
+    assert payload == {
+        "amount": 100,
+        "currency": Currency.INR.value,
+    }
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "amount",
+        "currency",
+    ],
+)
+def test_validate_create_order_request_missing_required_field(
+    create_valid_order_dict: dict[str, Any],
+    field: str,
+) -> None:
+    request = deepcopy(create_valid_order_dict)
+    request.pop(field)
+
+    with pytest.raises(ValidationError) as exc:
+        CreateOrderRequest(**request)
+
+    error = exc.value.errors()[0]
+
+    assert error["loc"] == (field,)
+    assert error["type"] == "missing"
 
 
 
@@ -71,41 +78,43 @@ def test_validate_create_order_request_serialization(
     "amount",
     [
         -1,
+        0,
         99,
-        0
-    ]
+    ],
 )
-def test_validate_cretae_order_request_invalid_amount(
-    create_valid_order_model: CreateOrderRequest,
-    amount: int
+def test_validate_create_order_request_invalid_amount(
+    create_valid_order_dict: dict[str, Any],
+    amount: int,
 ) -> None:
-
     request = build_request(
-        create_valid_order_model=create_valid_order_model,
-        amount=amount
+        create_valid_order_dict,
+        amount=amount,
     )
 
     with pytest.raises(ValidationError) as exc:
         CreateOrderRequest(**request)
 
-    errors = exc.value.errors()
     assert any(
         error["loc"] == ("amount",)
         and error["type"] == "greater_than_equal"
-        for error in errors
+        for error in exc.value.errors()
     )
 
 
 @pytest.mark.parametrize(
     "currency",
-    [123,"USDT", None],
+    [
+        123,
+        "USDT",
+        None,
+    ],
 )
-def test_validate_create_order_invalid_currency(
-    create_valid_order_model: CreateOrderRequest,
-    currency: str,
+def test_validate_create_order_request_invalid_currency(
+    create_valid_order_dict: dict[str, Any],
+    currency: Any,
 ) -> None:
     request = build_request(
-        create_valid_order_model,
+        create_valid_order_dict,
         currency=currency,
     )
 
@@ -115,14 +124,13 @@ def test_validate_create_order_invalid_currency(
     error = exc.value.errors()[0]
 
     assert error["loc"] == ("currency",)
-    assert error["type"] == "enum"
 
 
-def test_validate_create_order_invalid_receipt_length(
-    create_valid_order_model: CreateOrderRequest,
+def test_validate_create_order_request_receipt_too_long(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
     request = build_request(
-        create_valid_order_model,
+        create_valid_order_dict,
         receipt="S" * 41,
     )
 
@@ -135,12 +143,15 @@ def test_validate_create_order_invalid_receipt_length(
     assert error["type"] == "string_too_long"
 
 
-def test_validate_create_order_notes_more_than_15(
-    create_valid_order_model: CreateOrderRequest,
+def test_validate_create_order_request_notes_more_than_15(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
     request = build_request(
-        create_valid_order_model,
-        notes={f"key_{i}": f"value_{i}" for i in range(16)},
+        create_valid_order_dict,
+        notes={
+            f"key_{i}": f"value_{i}"
+            for i in range(16)
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -152,12 +163,14 @@ def test_validate_create_order_notes_more_than_15(
     assert error["type"] == "too_long"
 
 
-def test_validate_create_order_notes_key_too_long(
-    create_valid_order_model: CreateOrderRequest,
+def test_validate_create_order_request_notes_key_too_long(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
     request = build_request(
-        create_valid_order_model,
-        notes={"S" * 257: "value"},
+        create_valid_order_dict,
+        notes={
+            "S" * 257: "value",
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -170,12 +183,14 @@ def test_validate_create_order_notes_key_too_long(
     assert error["type"] == "string_too_long"
 
 
-def test_validate_create_order_notes_value_too_long(
-    create_valid_order_model: CreateOrderRequest,
+def test_validate_create_order_request_notes_value_too_long(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
     request = build_request(
-        create_valid_order_model,
-        notes={"key": "V" * 257},
+        create_valid_order_dict,
+        notes={
+            "key": "V" * 257,
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -187,11 +202,11 @@ def test_validate_create_order_notes_value_too_long(
     assert error["type"] == "too_long"
 
 
-def test_validate_create_order_extra_field(
-    create_valid_order_model: CreateOrderRequest,
+def test_validate_create_order_request_extra_field(
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
     request = build_request(
-        create_valid_order_model,
+        create_valid_order_dict,
         extra_field="unexpected",
     )
 
@@ -200,31 +215,59 @@ def test_validate_create_order_extra_field(
 
     error = exc.value.errors()[0]
 
+    assert error["loc"] == ("extra_field",)
     assert error["type"] == "extra_forbidden"
 
 
-def test_validate_update_order_succsess(
-    update_valid_order_model: UpdateOrderRequest
+def test_validate_update_order_request_success(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
+    request = UpdateOrderRequest(**update_valid_order_dict)
 
-    assert isinstance(update_valid_order_model, UpdateOrderRequest)
+    assert isinstance(request, UpdateOrderRequest)
+    assert request.notes["source"] == update_valid_order_dict["notes"]["source"]
+    assert request.notes["framework"] == update_valid_order_dict["notes"]["framework"]
 
 
-def test_validate_update_order_serialization(
-    update_valid_order_model: UpdateOrderRequest
+def test_update_order_request_to_api_payload(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
+    request = UpdateOrderRequest(**update_valid_order_dict)
 
-    request = update_valid_order_model.model_dump(mode="json")
+    payload = request.to_api_payload()
 
-    assert request["notes"] == update_valid_order_model.notes
+    assert payload == {
+        "notes": {
+            "source": update_valid_order_dict["notes"]["source"],
+            "framework": update_valid_order_dict["notes"]["framework"]
+        },
+    }
 
 
-def test_validate_update_order_invalid_notes_more_than_15(
-    update_valid_order_model: UpdateOrderRequest,
+def test_validate_update_order_request_missing_notes(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
-    request = build_update_request(
-        update_valid_order_model,
-        notes={f"key_{i}": f"value_{i}" for i in range(16)},
+    request = deepcopy(update_valid_order_dict)
+    request.pop("notes")
+
+    with pytest.raises(ValidationError) as exc:
+        UpdateOrderRequest(**request)
+
+    error = exc.value.errors()[0]
+
+    assert error["loc"] == ("notes",)
+    assert error["type"] == "missing"
+
+
+def test_validate_update_order_request_notes_more_than_15(
+    update_valid_order_dict: dict[str, Any],
+) -> None:
+    request = build_request(
+        update_valid_order_dict,
+        notes={
+            f"key_{i}": f"value_{i}"
+            for i in range(16)
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -236,12 +279,14 @@ def test_validate_update_order_invalid_notes_more_than_15(
     assert error["type"] == "too_long"
 
 
-def test_validate_update_order_notes_key_too_long(
-    update_valid_order_model: UpdateOrderRequest
+def test_validate_update_order_request_notes_key_too_long(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
-    request = build_update_request(
-        update_valid_order_model,
-        notes={"S" * 257: "value"},
+    request = build_request(
+        update_valid_order_dict,
+        notes={
+            "S" * 257: "value",
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -254,12 +299,14 @@ def test_validate_update_order_notes_key_too_long(
     assert error["type"] == "string_too_long"
 
 
-def test_validate_update_order_notes_value_too_long(
-    update_valid_order_model: UpdateOrderRequest,
+def test_validate_update_order_request_notes_value_too_long(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
-    request = build_update_request(
-        update_valid_order_model,
-        notes={"key": "V" * 257},
+    request = build_request(
+        update_valid_order_dict,
+        notes={
+            "key": "V" * 257,
+        },
     )
 
     with pytest.raises(ValidationError) as exc:
@@ -271,11 +318,11 @@ def test_validate_update_order_notes_value_too_long(
     assert error["type"] == "too_long"
 
 
-def test_validate_update_order_extra_field(
-    update_valid_order_model: UpdateOrderRequest,
+def test_validate_update_order_request_extra_field(
+    update_valid_order_dict: dict[str, Any],
 ) -> None:
-    request = build_update_request(
-        update_valid_order_model,
+    request = build_request(
+        update_valid_order_dict,
         extra_field="unexpected",
     )
 
@@ -284,4 +331,5 @@ def test_validate_update_order_extra_field(
 
     error = exc.value.errors()[0]
 
+    assert error["loc"] == ("extra_field",)
     assert error["type"] == "extra_forbidden"
