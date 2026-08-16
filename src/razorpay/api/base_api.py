@@ -1,12 +1,14 @@
 import time
 from typing import Any
 
-from urllib3.util.retry import Retry
-
 import requests
+from urllib3.util.retry import Retry
+from pydantic import ValidationError
 
 from razorpay.config.settings import settings
 from razorpay.utils.logger import logger
+from razorpay.exception.api import ApiError
+from razorpay.models.response.errors import ErrorResponse
 
 
 DEFAULT_RETRIES = 3
@@ -63,6 +65,39 @@ class BaseAPIClient:
             2                
         )
 
+
+    def raise_for_api_error(
+        self,
+        response: requests.Response,
+    ) -> None:
+
+        if response.ok:
+            return
+
+        try:
+            response_data = response.json()
+        except ValueError:
+            response_data = {}
+
+        try:
+            error_response = ErrorResponse.model_validate(
+                response_data
+            )
+
+            raise ApiError(
+                status_code=response.status_code,
+                message=error_response.error.description,
+                error_code=error_response.error.code,
+                response_data=error_response.model_dump(),
+            )
+
+        except ValidationError as exc:
+            raise ApiError(
+                status_code=response.status_code,
+                message=response.reason or "API request failed",
+                error_code=None,
+                response_data=response_data,
+            ) from exc
 
     def request(
         self,

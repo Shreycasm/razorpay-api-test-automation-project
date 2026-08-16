@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -6,12 +9,23 @@ from requests.auth import HTTPBasicAuth
 
 from razorpay.api.base_api import BaseAPIClient
 from razorpay.config.settings import settings
+from razorpay.exception.api import ApiError 
+
+
+@pytest.fixture
+def base_api_client() -> BaseAPIClient:
+    client = BaseAPIClient()
+
+    yield client
+
+    client.close()
 
 
 @pytest.fixture
 def mock_response() -> MagicMock:
     response = MagicMock()
     response.status_code = 200
+    response.ok = True
     return response
 
 
@@ -76,6 +90,24 @@ def test_retry_respects_retry_after_header() -> None:
     retry = adapter.max_retries
 
     assert retry.respect_retry_after_header is True
+
+
+@pytest.mark.parametrize(
+    "method",
+    [
+        "POST",
+        "PATCH",
+    ],
+)
+def test_non_idempotent_methods_are_not_retried(
+    base_api_client: BaseAPIClient,
+    method: str,
+) -> None:
+
+    adapter = base_api_client._session.get_adapter("https://")
+    retry = adapter.max_retries
+
+    assert method not in retry.allowed_methods
 
 
 def test_request_builds_url_and_uses_default_timeout( 
@@ -222,3 +254,111 @@ def test_request_reraises_generic_request_error() -> None:
             endpoint="/v1/orders",
         )
 
+
+def test_raise_for_api_error_returns_for_successful_response() -> None:
+    base_api_client = BaseAPIClient()
+
+    response = MagicMock()
+    response.ok = True
+
+    result = base_api_client.raise_for_api_error(response)
+
+    assert result is None
+
+    base_api_client.close()
+
+
+def test_raise_for_api_error_raises_api_error(
+    error_response_fixture: dict[str, Any],
+) -> None:
+    base_api_client = BaseAPIClient()
+
+    response = MagicMock()
+    response.ok = False
+    response.status_code = 400
+    response.json.return_value = error_response_fixture
+
+    with pytest.raises(ApiError) as exc:
+        base_api_client.raise_for_api_error(response)
+
+    error = exc.value
+
+    assert error.status_code == 400
+    assert error.error_code == error_response_fixture["error"]["code"]
+    assert error.message == error_response_fixture["error"]["description"]
+    assert error.response_data == error_response_fixture
+
+    base_api_client.close()
+
+
+def test_raise_for_api_error_handles_invalid_error_response(
+    base_api_client: BaseAPIClient,
+) -> None:
+
+    response = MagicMock()
+    response.ok = False
+    response.status_code = 500
+    response.reason = "Internal Server Error"
+    response.json.return_value = {
+        "unexpected": "response"
+    }
+
+    with pytest.raises(ApiError) as exc_info:
+        base_api_client.raise_for_api_error(response)
+
+    error = exc_info.value
+
+    assert error.status_code == 500
+    assert error.message == "Internal Server Error"
+    assert error.error_code is None
+    assert error.response_data == {
+        "unexpected": "response"
+    }
+
+
+def test_raise_for_api_error_handles_non_json_response(
+    base_api_client: BaseAPIClient,
+) -> None:
+
+    response = MagicMock()
+    response.ok = False
+    response.status_code = 502
+    response.reason = "Bad Gateway"
+    response.json.side_effect = ValueError(
+        "Invalid JSON"
+    )
+
+    with pytest.raises(ApiError) as exc_info:
+        base_api_client.raise_for_api_error(response)
+
+    error = exc_info.value
+
+    assert error.status_code == 502
+    assert error.message == "Bad Gateway"
+    assert error.error_code is None
+    assert error.response_data == {}
+
+
+def test_raise_for_api_error_uses_default_message(
+    base_api_client: BaseAPIClient,
+) -> None:
+
+    response = MagicMock()
+    response.ok = False
+    response.status_code = 500
+    response.reason = ""
+    response.json.return_value = {
+        "unexpected": "response"
+    }
+
+    with pytest.raises(ApiError) as exc_info:
+        base_api_client.raise_for_api_error(response)
+
+    error = exc_info.value
+
+    assert error.status_code == 500
+    assert error.message == "API request failed"
+    assert error.error_code is None
+    assert error.response_data == {
+        "unexpected": "response"
+    }
