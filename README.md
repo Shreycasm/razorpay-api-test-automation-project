@@ -1,4 +1,4 @@
-# Razorpay API Automation Framework
+# Razorpay API Automation Framework 
 
 A scalable API automation framework built with **Python and Pytest** for testing Razorpay APIs.
 
@@ -29,18 +29,18 @@ This project aims to demonstrate:
 
 ## 🛠️ Tech Stack
 
-| Technology     | Purpose                                   |
-| -------------- | ----------------------------------------- |
-| Python         | Programming language                      |
-| Pytest         | Test framework                            |
-| Requests       | HTTP client                               |
-| Pydantic       | Request/response validation               |
-| JSON Schema    | API contract validation                   |
-| Structlog      | Structured logging                        |
-| Faker          | Test data generation                      |
-| Allure         | Test reporting                            |
-| GitHub Actions | CI/CD                                     |
-| uv             | Python package and environment management |
+| Technology                                            | Purpose                                   |
+| ------------------------------------------------------| ----------------------------------------- |
+| [Python](https://docs.python.org/3/)                  | Programming language                      |
+| [Pytest](https://docs.pytest.org/en/8.3.x/)           | Test framework                            |
+| [Requests](https://requests.readthedocs.io/)          | HTTP client                               |
+| [Pydantic](https://docs.pydantic.dev/2.10/)           | Request/response validation               |
+| [JSON Schema](https://json-schema.org/docs)           | API contract validation                   |
+| [Structlog](https://www.structlog.org/en/stable/)     | Structured logging                        |
+| [Faker](https://faker.readthedocs.io/en/master/)      | Test data generation                      |
+| [Allure](https://allurereport.org/docs/)              | Test reporting                            |
+| [GitHub Actions](https://docs.github.com/en/actions)  | CI/CD                                     |
+| [uv](https://docs.astral.sh/uv/)                      | Python package and environment management |
 
 ---
 
@@ -177,6 +177,7 @@ Current status:
 * [x] Add request and response models
 * [x] Add API error handling
 * [x] Add JSON Schema validation
+* [x] Implement Orders API with unit tests
 
 ---
 

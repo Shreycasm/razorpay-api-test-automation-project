@@ -2,23 +2,30 @@ import time
 from typing import Any
 
 import requests
-from urllib3.util.retry import Retry
 from pydantic import ValidationError
+from urllib3.util.retry import Retry
 
 from razorpay.config.settings import settings
-from razorpay.utils.logger import logger
 from razorpay.exception.api import ApiError
 from razorpay.models.response.errors import ErrorResponse
+from razorpay.utils.logger import logger
 
 
 DEFAULT_RETRIES = 3
-ALLOWED_METHODS = [
+ALLOWED_METHODS = (
     "GET",
     "PUT",
-    "DELETE"
-]
-STATUS_FORCELIST = [429,500,502,503,504]
+    "DELETE",
+)
+STATUS_FORCELIST = (
+    429,
+    500,
+    502,
+    503,
+    504,
+)
 BACKOFF_FACTOR = 1
+
 
 class BaseAPIClient:
 
@@ -27,6 +34,7 @@ class BaseAPIClient:
         self._request_timeout_seconds = settings.request_timeout_seconds
 
         self._session = requests.Session()
+
         self._session.headers.update(
             {
                 "Content-Type": "application/json",
@@ -36,41 +44,38 @@ class BaseAPIClient:
 
         self._session.auth = requests.auth.HTTPBasicAuth(
             username=settings.api_key,
-            password=settings.api_key_secret.get_secret_value()
+            password=settings.api_key_secret.get_secret_value(),
         )
 
         self._logger = logger
 
         retry_strategy = Retry(
-            total = DEFAULT_RETRIES,
-            allowed_methods = ALLOWED_METHODS,
-            status_forcelist = STATUS_FORCELIST,
+            total=DEFAULT_RETRIES,
+            allowed_methods=ALLOWED_METHODS,
+            status_forcelist=STATUS_FORCELIST,
             backoff_factor=BACKOFF_FACTOR,
             respect_retry_after_header=True,
-            raise_on_status=False   
+            raise_on_status=False,
         )
 
         adapter = requests.adapters.HTTPAdapter(
-            max_retries=retry_strategy
+            max_retries=retry_strategy,
         )
 
         self._session.mount("http://", adapter)
         self._session.mount("https://", adapter)
 
-
     @staticmethod
     def _elapsed_time(start_time: float) -> float:
         return round(
             (time.perf_counter() - start_time) * 1000,
-            2                
+            2,
         )
-
 
     def raise_for_api_error(
         self,
         response: requests.Response,
     ) -> None:
-
         if response.ok:
             return
 
@@ -103,7 +108,9 @@ class BaseAPIClient:
         self,
         method: str,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         endpoint = "/" + endpoint.lstrip("/")
@@ -111,23 +118,22 @@ class BaseAPIClient:
 
         kwargs.setdefault(
             "timeout",
-            self._request_timeout_seconds
+            self._request_timeout_seconds,
         )
 
         requests_logger = self._logger.bind(
             method=method,
             endpoint=endpoint,
-            url=url
+            url=url,
         )
 
         if kwargs.get("params"):
             requests_logger = requests_logger.bind(
-                query_parameters=kwargs["params"]
+                query_parameters=kwargs["params"],
             )
 
-
         requests_logger.info(
-            "HTTP request started."
+            "HTTP request started.",
         )
 
         start_time = time.perf_counter()
@@ -136,116 +142,119 @@ class BaseAPIClient:
             response = self._session.request(
                 method=method,
                 url=url,
-                **kwargs
+                **kwargs,
             )
 
             requests_logger.info(
                 "HTTP request completed.",
                 status_code=response.status_code,
-                duration_ms=self._elapsed_time(start_time)
+                duration_ms=self._elapsed_time(start_time),
             )
+
+            if raise_for_error:
+                self.raise_for_api_error(response)
 
             return response
 
         except requests.Timeout as exc:
             requests_logger.exception(
-                "HTTP request timeout",
+                "HTTP request timeout.",
                 timeout=self._request_timeout_seconds,
                 error=str(exc),
-                duration_ms=self._elapsed_time(
-                    start_time
-                    )
+                duration_ms=self._elapsed_time(start_time),
             )
             raise
-
 
         except requests.ConnectionError as exc:
             requests_logger.exception(
-                "HTTP request connection error",
+                "HTTP request connection error.",
                 error=str(exc),
-                duration_ms=self._elapsed_time(
-                    start_time
-                    )
+                duration_ms=self._elapsed_time(start_time),
             )
             raise
-
 
         except requests.RequestException as exc:
             requests_logger.exception(
-                "HTTP request failed",
+                "HTTP request failed.",
                 error=str(exc),
-                duration_ms=self._elapsed_time(
-                    start_time
-                    )
+                duration_ms=self._elapsed_time(start_time),
             )
             raise
-
 
     def get(
         self,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         return self.request(
             method="GET",
             endpoint=endpoint,
-            **kwargs
-            )
-
+            raise_for_error=raise_for_error,
+            **kwargs,
+        )
 
     def post(
         self,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         return self.request(
             method="POST",
             endpoint=endpoint,
-            **kwargs
+            raise_for_error=raise_for_error,
+            **kwargs,
         )
 
-        
     def put(
         self,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         return self.request(
             method="PUT",
             endpoint=endpoint,
-            **kwargs
+            raise_for_error=raise_for_error,
+            **kwargs,
         )
-
 
     def patch(
         self,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         return self.request(
             method="PATCH",
             endpoint=endpoint,
-            **kwargs
-            )
-
+            raise_for_error=raise_for_error,
+            **kwargs,
+        )
 
     def delete(
         self,
         endpoint: str,
-        **kwargs: dict[str, Any]
+        *,
+        raise_for_error: bool = True,
+        **kwargs: Any,
     ) -> requests.Response:
 
         return self.request(
             method="DELETE",
             endpoint=endpoint,
-            **kwargs
+            raise_for_error=raise_for_error,
+            **kwargs,
         )
 
-
     def close(self) -> None:
-
         self._session.close()

@@ -65,19 +65,19 @@ def test_retry_configuration() -> None:
 
     assert retry.backoff_factor == 1
 
-    assert retry.status_forcelist == [
+    assert retry.status_forcelist == (
         429,
         500,
         502,
         503,
         504,
-    ]
+    )
 
-    assert retry.allowed_methods == [
+    assert retry.allowed_methods == (
         "GET",
         "PUT",
         "DELETE",
-    ]
+    )
 
     assert retry.raise_on_status is False
 

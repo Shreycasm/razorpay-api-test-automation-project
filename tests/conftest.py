@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 import structlog
 
+from razorpay.api.orders_api import OrdersApi
 from razorpay.validators.schema_validator import SchemaValidator
 from tests.test_data.order_request import valid_order, valid_update_order
 from tests.test_data.order_response import valid_order_response, valid_list_order_response
@@ -26,6 +27,16 @@ def test_logging_context(request: pytest.FixtureRequest):
     yield
 
     structlog.contextvars.clear_contextvars()
+
+
+@pytest.fixture(scope="session")
+def orders_api() -> OrdersApi:
+
+    client = OrdersApi()
+
+    yield client
+
+    client.close()
 
 
 @pytest.fixture(scope="session")
