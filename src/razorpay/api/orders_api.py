@@ -59,11 +59,11 @@ class OrdersApi(BaseAPIClient):
 
         return ApiResponse(
             http=response,
-            data=OrderResponse.model_validate(response.json()),
+            data=OrderResponse.model_validate(response.json()), 
         )
 
     def get_order_raw(
-        self,
+        self, 
         order_id: str,
     ) -> requests.Response:
 
@@ -74,8 +74,34 @@ class OrdersApi(BaseAPIClient):
 
     def list_orders(
         self,
-        **query_params: Any,
+        *,
+        count: int | None = None,
+        skip: int | None = None,
+        authorized: int | None = None,
+        from_date: int | None = None,
+        to_date: int | None = None,
+        receipt: str | None = None,
     ) -> ApiResponse[OrderListResponse]:
+
+        query_params: dict[str, Any] = {}
+
+        if from_date is not None:
+            query_params["from"] = from_date
+
+        if to_date is not None:
+            query_params["to"] = to_date
+
+        if receipt is not None:
+            query_params["receipt"] = receipt
+
+        if authorized is not None:
+            query_params["authorized"] = authorized
+
+        if count is not None:
+            query_params["count"] = count
+
+        if skip is not None:
+            query_params["skip"] = skip
 
         response = self.get(
             endpoint=self._ENDPOINT,

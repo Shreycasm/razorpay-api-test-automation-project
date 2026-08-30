@@ -1,5 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Response schema for Razorpay Order objects. Note: Razorpay Sandbox currently accepts receipt and notes values that exceed documented request constraints. These constraints are intentionally not enforced here because such values may be persisted and returned by subsequent API responses. Structural and type validation remain enforced.",
+    "title": "Razorpay Order Response",
     "type": "object",
     "additionalProperties": false,
     "required": [
@@ -47,11 +49,11 @@
             "maxLength": 3
         },
         "receipt": {
+            "description": "The Sandbox currently accepts receipt values exceeding the documented request constraint. Length validation is intentionally not enforced in the response schema.",
             "type": [
                 "string",
                 "null"
-            ],
-            "maxLength": 40
+            ]
         },
         "offer_id": {
             "type": [
@@ -72,18 +74,16 @@
             "minimum": 0
         },
         "notes": {
+            "description": "The Sandbox currently accepts notes exceeding the documented limits. Length and property-count constraints are intentionally not enforced in the response schema.",
             "oneOf": [
                 {
                     "type": "object",
                     "additionalProperties": {
-                        "type": "string",
-                        "maxLength": 256
+                        "type": "string"
                     },
                     "propertyNames": {
-                        "type": "string",
-                        "maxLength": 256
-                    },
-                    "maxProperties": 15
+                        "type": "string"
+                    }
                 },
                 {
                     "type": "array",
