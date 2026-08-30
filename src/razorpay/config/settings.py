@@ -47,6 +47,12 @@ class Settings(BaseSettings):
         alias="LOG_LEVEL",
     )
 
+    integration_post_delay_seconds: float = Field(
+        default=0,
+        ge=0,
+        alias="INTEGRATION_POST_DELAY_SECONDS"
+    )
+
     @field_validator("log_level", mode="before")
     @classmethod
     def __uppercase_log_level(cls, value: str) -> str:

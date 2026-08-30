@@ -32,6 +32,7 @@ class BaseAPIClient:
     def __init__(self) -> None:
         self._base_url = str(settings.base_url).rstrip("/")
         self._request_timeout_seconds = settings.request_timeout_seconds
+        self.integration_post_delay_seconds = settings.integration_post_delay_seconds
 
         self._session = requests.Session()
 
@@ -104,6 +105,21 @@ class BaseAPIClient:
                 response_data=response_data,
             ) from exc
 
+
+    def _apply_request_delay(
+        self,
+        method: str,
+    ) -> None:
+
+        if method.upper() == "POST" and self.integration_post_delay_seconds > 0:
+            self._logger.debug(
+                "Applying API request delay.",
+                delay_seconds=self.integration_post_delay_seconds,
+            )
+
+            time.sleep(self.integration_post_delay_seconds)
+
+
     def request(
         self,
         method: str,
@@ -136,6 +152,7 @@ class BaseAPIClient:
             "HTTP request started.",
         )
 
+        self._apply_request_delay(method)
         start_time = time.perf_counter()
 
         try:
