@@ -1,22 +1,31 @@
 import json
 
+import pytest
+
 from razorpay.utils.logger import LOG_FILE, LOG_DIR, logger
 
 
+pytestmark = pytest.mark.unit
+
+
+@pytest.mark.positive
 def test_log_directory_exists() -> None:
     assert LOG_DIR.exists()
     assert LOG_DIR.is_dir()
 
 
+@pytest.mark.positive
 def test_log_file_exists() -> None:
     assert LOG_FILE.exists()
     assert LOG_FILE.is_file()
 
 
+@pytest.mark.positive
 def test_logger_name() -> None:
     assert logger.name == "razorpay"
 
 
+@pytest.mark.positive
 def test_logger_writes_info_to_file() -> None:
     test_message = "logger info test"
 
@@ -27,6 +36,7 @@ def test_logger_writes_info_to_file() -> None:
     assert test_message in log_content
 
 
+@pytest.mark.positive
 def test_logger_writes_error_to_file() -> None:
     test_message = "logger error test"
 
@@ -37,6 +47,7 @@ def test_logger_writes_error_to_file() -> None:
     assert test_message in log_content
 
 
+@pytest.mark.positive
 def test_logger_writes_json_to_file() -> None:
     test_message = "logger json test"
 
@@ -57,6 +68,7 @@ def test_logger_writes_json_to_file() -> None:
     assert log_entry["status_code"] == 201
 
 
+@pytest.mark.positive
 def test_logger_records_exception() -> None:
     test_message = "exception logging test"
 

@@ -30,3 +30,10 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
+strict_markers = true
+markers = [
+    "unit: Unit tests that do not make real API calls",
+    "integration: Integration tests that make real API calls",
+    "positive: Tests covering valid inputs and expected successful behavior",
+    "negative: Tests covering invalid inputs and expected failure behavior",
+]

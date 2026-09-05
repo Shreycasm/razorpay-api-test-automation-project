@@ -82,7 +82,10 @@
                         "type": "string"
                     },
                     "propertyNames": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "array"
+                        ]
                     }
                 },
                 {

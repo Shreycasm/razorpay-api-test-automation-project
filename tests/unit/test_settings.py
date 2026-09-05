@@ -8,9 +8,14 @@ from pydantic import ValidationError
 from razorpay.config.settings import Settings
 
 
+pytestmark = pytest.mark.unit
+
+
+@pytest.mark.positive
 def test_validate_settings_success() -> None:
 
     config_settings = Settings()
+
     assert isinstance(config_settings, Settings)
     assert str(config_settings.base_url) == "https://api.razorpay.com/"
     assert config_settings.request_timeout_seconds == 30
@@ -18,13 +23,14 @@ def test_validate_settings_success() -> None:
     assert config_settings.api_key.startswith("rzp_test_")
 
 
+@pytest.mark.negative
 def test_validate_settings_invalid_base_url(
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
 
     monkeypatch.setenv("BASE_URL", "invalid-url")
 
-    with pytest.raises(ValidationError):    
+    with pytest.raises(ValidationError):
         Settings()
 
 
@@ -35,12 +41,13 @@ def test_validate_settings_invalid_base_url(
         "debug",
         "wArning",
         "ErRoR",
-        "CRITICAL"
-    ]
+        "CRITICAL",
+    ],
 )
+@pytest.mark.positive
 def test_validate_settings_valid_log_level(
     log_level: str,
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
 
     monkeypatch.setenv("LOG_LEVEL", log_level)
@@ -52,12 +59,13 @@ def test_validate_settings_valid_log_level(
     "log_level",
     [
         "verbose",
-        "trace"
-    ]
+        "trace",
+    ],
 )
+@pytest.mark.negative
 def test_validate_settings_invalid_log_level(
     log_level: str,
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
 
     monkeypatch.setenv("LOG_LEVEL", log_level)
@@ -70,13 +78,14 @@ def test_validate_settings_invalid_log_level(
     ("timeout", "expected"),
     [
         ("30", 30),
-        ("15",15)
-    ]
+        ("15", 15),
+    ],
 )
+@pytest.mark.positive
 def test_validate_settings_valid_timeout(
     timeout: str,
     expected: int,
-    monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
 
     monkeypatch.setenv("REQUEST_TIMEOUT_SECONDS", timeout)
@@ -89,12 +98,14 @@ def test_validate_settings_valid_timeout(
     [
         "abc",
         "-1",
-    ]
+    ],
 )
+@pytest.mark.negative
 def test_validate_settings_invalid_timeout(
     monkeypatch: pytest.MonkeyPatch,
-    timeout: Any
+    timeout: Any,
 ) -> None:
+
     monkeypatch.setenv("REQUEST_TIMEOUT_SECONDS", timeout)
 
     with pytest.raises(ValidationError):

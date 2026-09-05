@@ -15,12 +15,14 @@ from razorpay.models.response.orders import (
 )
 
 
+pytestmark = pytest.mark.unit
+
+
 def mock_response(
     *,
     status_code: int,
     json_data: dict[str, Any],
 ) -> MagicMock:
-
     response = MagicMock()
     response.status_code = status_code
     response.ok = 200 <= status_code <= 299
@@ -30,13 +32,13 @@ def mock_response(
     return response
 
 
+@pytest.mark.positive
 def test_create_order_sends_correct_request(
     orders_api: OrdersApi,
     valid_order_response_dict: dict[str, Any],
     create_valid_order_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data=valid_order_response_dict,
@@ -63,11 +65,11 @@ def test_create_order_sends_correct_request(
     )
 
 
+@pytest.mark.negative
 def test_create_order_rejects_invalid_payload(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     invalid_payload = {
         "amount": -100,
         "currency": "INR",
@@ -87,12 +89,12 @@ def test_create_order_rejects_invalid_payload(
     mock_post.assert_not_called()
 
 
+@pytest.mark.negative
 def test_create_order_rejects_invalid_response(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data={
@@ -112,11 +114,11 @@ def test_create_order_rejects_invalid_response(
         orders_api.create_order(create_valid_order_dict)
 
 
+@pytest.mark.positive
 def test_create_order_raw_returns_raw_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=400,
         json_data={
@@ -149,12 +151,12 @@ def test_create_order_raw_returns_raw_response(
     )
 
 
+@pytest.mark.positive
 def test_get_order_success(
     orders_api: OrdersApi,
     valid_order_response_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data=valid_order_response_dict,
@@ -182,11 +184,11 @@ def test_get_order_success(
     )
 
 
+@pytest.mark.negative
 def test_get_order_rejects_invalid_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data={
@@ -208,11 +210,11 @@ def test_get_order_rejects_invalid_response(
         )
 
 
+@pytest.mark.positive
 def test_get_order_raw_returns_raw_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=404,
         json_data={
@@ -242,12 +244,12 @@ def test_get_order_raw_returns_raw_response(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_success(
     orders_api: OrdersApi,
     valid_list_order_response_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data=valid_list_order_response_dict,
@@ -279,11 +281,11 @@ def test_list_orders_success(
     )
 
 
+@pytest.mark.negative
 def test_list_orders_rejects_invalid_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data={
@@ -305,11 +307,11 @@ def test_list_orders_rejects_invalid_response(
         )
 
 
+@pytest.mark.positive
 def test_list_orders_raw_returns_raw_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=400,
         json_data={
@@ -342,13 +344,13 @@ def test_list_orders_raw_returns_raw_response(
     )
 
 
+@pytest.mark.positive
 def test_update_order_success(
     orders_api: OrdersApi,
     valid_order_response_dict: dict[str, Any],
     update_valid_order_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data=valid_order_response_dict,
@@ -381,13 +383,13 @@ def test_update_order_success(
     )
 
 
+@pytest.mark.negative
 def test_update_order_rejects_invalid_payload(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     invalid_payload = {
-        "notes": "invalid"*25,
+        "notes": "invalid" * 25,
     }
 
     mock_patch = MagicMock()
@@ -407,12 +409,12 @@ def test_update_order_rejects_invalid_payload(
     mock_patch.assert_not_called()
 
 
+@pytest.mark.negative
 def test_update_order_rejects_invalid_response(
     orders_api: OrdersApi,
     update_valid_order_dict: dict[str, Any],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=200,
         json_data={
@@ -435,11 +437,11 @@ def test_update_order_rejects_invalid_response(
         )
 
 
+@pytest.mark.positive
 def test_update_order_raw_returns_raw_response(
     orders_api: OrdersApi,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-
     response = mock_response(
         status_code=400,
         json_data={

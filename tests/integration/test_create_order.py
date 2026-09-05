@@ -1,19 +1,23 @@
-from typing import Any
 from copy import deepcopy
+from typing import Any
 
 import pytest
 
 from razorpay.api.orders_api import OrdersApi
-from razorpay.validators.schema_validator import SchemaValidator
 from razorpay.enums.currency import Currency
+from razorpay.validators.schema_validator import SchemaValidator
 
-from tests.constants import ORDER_SCHEMA, ERROR_SCHEMA
+from tests.constants import ERROR_SCHEMA, ORDER_SCHEMA
 
 
+pytestmark = pytest.mark.integration
+
+
+@pytest.mark.positive
 def test_create_order_success(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     response = orders_api.create_order(create_valid_order_dict)
@@ -27,14 +31,15 @@ def test_create_order_success(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
-    
+
+@pytest.mark.positive
 def test_create_order_success_without_optionals_fields(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -50,38 +55,43 @@ def test_create_order_success_without_optionals_fields(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
-
-
-def test_create_order_with_maximum_notes(
-    orders_api: OrdersApi,
-    create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
-) -> None:
-
-    payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {f"key_{i}": f"value_{i}" for i in range(15)}
-
-    response = orders_api.create_order(payload)
-
-    assert response.http.status_code == 200
-    assert response.data.notes == payload["notes"]
-
-    schema_validator.validate(
-        response.http.json(),
-        ORDER_SCHEMA
+        ORDER_SCHEMA,
     )
 
 
+@pytest.mark.positive
+def test_create_order_with_maximum_notes(
+    orders_api: OrdersApi,
+    create_valid_order_dict: dict[str, Any],
+    schema_validator: SchemaValidator,
+) -> None:
+
+    payload = deepcopy(create_valid_order_dict)
+    payload["notes"] = {
+        f"key_{i}": f"value_{i}"
+        for i in range(15)
+    }
+
+    response = orders_api.create_order(payload)
+
+    assert response.http.status_code == 200
+    assert response.data.notes == payload["notes"]
+
+    schema_validator.validate(
+        response.http.json(),
+        ORDER_SCHEMA,
+    )
+
+
+@pytest.mark.positive
 def test_create_order_with_maximum_notes_keys_length(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {"K"*256 : "value"}
+    payload["notes"] = {"K" * 256: "value"}
 
     response = orders_api.create_order(payload)
 
@@ -90,18 +100,19 @@ def test_create_order_with_maximum_notes_keys_length(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.positive
 def test_create_order_with_maximum_notes_values_length(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {"keys" : "V"*256}
+    payload["notes"] = {"keys": "V" * 256}
 
     response = orders_api.create_order(payload)
 
@@ -110,18 +121,19 @@ def test_create_order_with_maximum_notes_values_length(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.positive
 def test_create_order_with_maximum_receipt_length(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["receipt"] = "R"*40
+    payload["receipt"] = "R" * 40
 
     response = orders_api.create_order(payload)
 
@@ -130,10 +142,11 @@ def test_create_order_with_maximum_receipt_length(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.positive
 @pytest.mark.parametrize(
     "currency",
     [
@@ -141,13 +154,13 @@ def test_create_order_with_maximum_receipt_length(
         Currency.USD,
         Currency.AED,
         Currency.EUR,
-    ]
+    ],
 )
 def test_create_order_with_different_currencies(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
     schema_validator: SchemaValidator,
-    currency: Currency
+    currency: Currency,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -160,35 +173,36 @@ def test_create_order_with_different_currencies(
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.positive
 def test_create_order_amount_breakdown(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     response = orders_api.create_order(create_valid_order_dict)
 
     assert response.http.status_code == 200
-    assert(
-        response.data.amount_due +
-        response.data.amount_paid
+    assert (
+        response.data.amount_due + response.data.amount_paid
         == response.data.amount
     )
 
     schema_validator.validate(
         response.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.positive
 def test_create_order_unique_order_id(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = create_valid_order_dict
@@ -202,19 +216,20 @@ def test_create_order_unique_order_id(
 
     schema_validator.validate(
         response_1.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
     schema_validator.validate(
         response_2.http.json(),
-        ORDER_SCHEMA
-        )
+        ORDER_SCHEMA,
+    )
 
 
+@pytest.mark.negative
 def test_create_order_missing_amount(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
-    create_valid_order_dict: dict[str, Any]
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -226,14 +241,15 @@ def test_create_order_missing_amount(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
-        )
+        ERROR_SCHEMA,
+    )
 
 
+@pytest.mark.negative
 def test_create_order_missing_currency(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
-    create_valid_order_dict: dict[str, Any]
+    create_valid_order_dict: dict[str, Any],
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -245,10 +261,11 @@ def test_create_order_missing_currency(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
-        )
+        ERROR_SCHEMA,
+    )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_amount",
     [
@@ -258,14 +275,14 @@ def test_create_order_missing_currency(
         "one-hundred",
         99,
         None,
-        True
-    ]
+        True,
+    ],
 )
 def test_create_order_invalid_amount(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
     schema_validator: SchemaValidator,
-    invalid_amount: Any
+    invalid_amount: Any,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -277,10 +294,11 @@ def test_create_order_invalid_amount(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
-        )
+        ERROR_SCHEMA,
+    )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_currency",
     [
@@ -289,14 +307,14 @@ def test_create_order_invalid_amount(
         None,
         "inr",
         "Inr",
-        ""
-    ]
+        "",
+    ],
 )
-def  test_create_order_invalid_currency(
+def test_create_order_invalid_currency(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
     schema_validator: SchemaValidator,
-    invalid_currency: str
+    invalid_currency: Any,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -308,18 +326,22 @@ def  test_create_order_invalid_currency(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
-        )
+        ERROR_SCHEMA,
+    )
 
 
+@pytest.mark.negative
 @pytest.mark.xfail(
-    reason="Sandbox accepts more than 40 charachters for recepipt but the Documentation says it should be 40",
-    strict=True
+    reason=(
+        "Sandbox accepts more than 40 characters for receipt, "
+        "but the documentation says it should be 40."
+    ),
+    strict=True,
 )
 def test_create_order_receipt_more_than_40(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -331,10 +353,11 @@ def test_create_order_receipt_more_than_40(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_receipt",
     [
@@ -378,13 +401,13 @@ def test_create_order_receipt_more_than_40(
                 strict=True,
             ),
         ),
-    ]
+    ],
 )
 def test_create_order_invalid_receipt(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
     schema_validator: SchemaValidator,
-    invalid_receipt: str
+    invalid_receipt: str,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -396,22 +419,29 @@ def test_create_order_invalid_receipt(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )
 
 
+@pytest.mark.negative
 @pytest.mark.xfail(
-    reason="Sandbox accepts more than 15 notes but the Documentation says it should only accept 15",
-    strict=True
+    reason=(
+        "Sandbox accepts more than 15 notes, "
+        "but the documentation says it should only accept 15."
+    ),
+    strict=True,
 )
 def test_create_order_notes_more_than_15(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {f"key_{i+1}": f"value_{i+1}" for i in range(17)}
+    payload["notes"] = {
+        f"key_{i + 1}": f"value_{i + 1}"
+        for i in range(17)
+    }
 
     response = orders_api.create_order_raw(payload)
 
@@ -419,22 +449,26 @@ def test_create_order_notes_more_than_15(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )
 
 
+@pytest.mark.negative
 @pytest.mark.xfail(
-    reason="Sandbox accepts notes keys with more than 256 charachters but the Documentation says it should only accept 256",
-    strict=True
+    reason=(
+        "Sandbox accepts notes keys with more than 256 characters, "
+        "but the documentation says it should only accept 256."
+    ),
+    strict=True,
 )
 def test_create_order_notes_keys_more_than_256(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {"K"*257 : "Value"}
+    payload["notes"] = {"K" * 257: "Value"}
 
     response = orders_api.create_order_raw(payload)
 
@@ -442,22 +476,26 @@ def test_create_order_notes_keys_more_than_256(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )
 
 
+@pytest.mark.negative
 @pytest.mark.xfail(
-    reason="Sandbox accepts notes values with more than 256 charachters but the Documentation says it should only accept 256",
-    strict=True
+    reason=(
+        "Sandbox accepts notes values with more than 256 characters, "
+        "but the documentation says it should only accept 256."
+    ),
+    strict=True,
 )
 def test_create_order_notes_values_more_than_256(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
-    payload["notes"] = {"keys" : "V"*257}
+    payload["notes"] = {"keys": "V" * 257}
 
     response = orders_api.create_order_raw(payload)
 
@@ -465,14 +503,15 @@ def test_create_order_notes_values_more_than_256(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )
 
 
+@pytest.mark.negative
 def test_create_order_unexpected_fields(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],
-    schema_validator: SchemaValidator
+    schema_validator: SchemaValidator,
 ) -> None:
 
     payload = deepcopy(create_valid_order_dict)
@@ -484,5 +523,5 @@ def test_create_order_unexpected_fields(
 
     schema_validator.validate(
         response.json(),
-        ERROR_SCHEMA
+        ERROR_SCHEMA,
     )

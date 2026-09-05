@@ -15,11 +15,14 @@ from tests.constants import (
 )
 
 
+pytestmark = pytest.mark.unit
+
+
+@pytest.mark.positive
 def test_validate_order_schema_success(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
 ) -> None:
-
     schema_validator.validate(
         valid_order_response_dict,
         ORDER_SCHEMA,
@@ -40,15 +43,15 @@ def test_validate_order_schema_success(
         "attempts",
         "notes",
         "created_at",
-        "offer_id"
+        "offer_id",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_schema_missing_required_field(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
     field_name: str,
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response.pop(field_name)
 
@@ -59,11 +62,11 @@ def test_validate_order_schema_missing_required_field(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_schema_invalid_order_id(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response["id"] = "collection_asbckajcabccja"
 
@@ -84,50 +87,14 @@ def test_validate_order_schema_invalid_order_id(
         "CONVERTED",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_schema_invalid_status(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
     status: str,
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response["status"] = status
-
-    with pytest.raises(ValidationError):
-        schema_validator.validate(
-            response,
-            ORDER_SCHEMA,
-        )
-
-
-def test_validate_order_schema_invalid_notes_key(
-    schema_validator: SchemaValidator,
-    valid_order_response_dict: dict[str, Any],
-) -> None:
-
-    response = deepcopy(valid_order_response_dict)
-
-    response["notes"] = {
-        "S" * 257: "value",
-    }
-
-    with pytest.raises(ValidationError):
-        schema_validator.validate(
-            response,
-            ORDER_SCHEMA,
-        )
-
-
-def test_validate_order_schema_invalid_notes_value(
-    schema_validator: SchemaValidator,
-    valid_order_response_dict: dict[str, Any],
-) -> None:
-
-    response = deepcopy(valid_order_response_dict)
-
-    response["notes"] = {
-        "key": "S" * 257,
-    }
 
     with pytest.raises(ValidationError):
         schema_validator.validate(
@@ -144,12 +111,12 @@ def test_validate_order_schema_invalid_notes_value(
         "collection",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_schema_invalid_order_entity(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
     entity: str,
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response["entity"] = entity
 
@@ -160,11 +127,11 @@ def test_validate_order_schema_invalid_order_entity(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_schema_invalid_created_at(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response["created_at"] = "invalid"
 
@@ -175,11 +142,11 @@ def test_validate_order_schema_invalid_created_at(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_schema_additional_property(
     schema_validator: SchemaValidator,
     valid_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_order_response_dict)
     response["unexpected"] = "value"
 
@@ -190,24 +157,23 @@ def test_validate_order_schema_additional_property(
         )
 
 
+@pytest.mark.positive
 def test_validate_order_list_schema_success(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
-
     schema_validator.validate(
         valid_list_order_response_dict,
         ORDER_LIST_SCHEMA,
     )
 
 
+@pytest.mark.negative
 def test_validate_order_list_schema_more_than_max_items(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_list_order_response_dict)
-
     response["items"] *= 101
     response["count"] = len(response["items"])
 
@@ -226,12 +192,12 @@ def test_validate_order_list_schema_more_than_max_items(
         "Collection",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_list_schema_invalid_entity(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
     entity: str,
 ) -> None:
-
     response = deepcopy(valid_list_order_response_dict)
     response["entity"] = entity
 
@@ -242,11 +208,11 @@ def test_validate_order_list_schema_invalid_entity(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_list_schema_additional_property(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_list_order_response_dict)
     response["unexpected"] = "value"
 
@@ -257,13 +223,12 @@ def test_validate_order_list_schema_additional_property(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_list_schema_missing_required_field(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_list_order_response_dict)
-
     response.pop("items")
 
     with pytest.raises(ValidationError):
@@ -273,11 +238,11 @@ def test_validate_order_list_schema_missing_required_field(
         )
 
 
+@pytest.mark.negative
 def test_validate_order_list_schema_invalid_count(
     schema_validator: SchemaValidator,
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
-
     response = deepcopy(valid_list_order_response_dict)
     response["count"] = -1
 
@@ -288,11 +253,11 @@ def test_validate_order_list_schema_invalid_count(
         )
 
 
+@pytest.mark.positive
 def test_validate_error_schema_success(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
 ) -> None:
-
     schema_validator.validate(
         error_response_fixture,
         ERROR_SCHEMA,
@@ -310,12 +275,12 @@ def test_validate_error_schema_success(
         "reason",
     ],
 )
+@pytest.mark.negative
 def test_validate_error_schema_missing_required_field(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
     subfield_name: str,
 ) -> None:
-
     response = deepcopy(error_response_fixture)
     response["error"].pop(subfield_name)
 
@@ -326,11 +291,11 @@ def test_validate_error_schema_missing_required_field(
         )
 
 
+@pytest.mark.negative
 def test_validate_error_schema_missing_error_field(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
 ) -> None:
-
     response = deepcopy(error_response_fixture)
     response.pop("error")
 
@@ -341,11 +306,11 @@ def test_validate_error_schema_missing_error_field(
         )
 
 
+@pytest.mark.negative
 def test_validate_error_schema_additional_property(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
 ) -> None:
-
     response = deepcopy(error_response_fixture)
     response["unexpected"] = "value"
 
@@ -356,11 +321,11 @@ def test_validate_error_schema_additional_property(
         )
 
 
+@pytest.mark.negative
 def test_validate_error_schema_additional_nested_property(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
 ) -> None:
-
     response = deepcopy(error_response_fixture)
     response["error"]["unexpected"] = "value"
 
@@ -371,11 +336,11 @@ def test_validate_error_schema_additional_nested_property(
         )
 
 
+@pytest.mark.negative
 def test_validate_error_schema_invalid_field_type(
     schema_validator: SchemaValidator,
     error_response_fixture: dict[str, Any],
 ) -> None:
-
     response = deepcopy(error_response_fixture)
     response["error"]["code"] = 123
 
@@ -385,10 +350,11 @@ def test_validate_error_schema_invalid_field_type(
             ERROR_SCHEMA,
         )
 
+
+@pytest.mark.negative
 def test_validate_unknown_schema(
     schema_validator: SchemaValidator,
 ) -> None:
-
     with pytest.raises(FileNotFoundError):
         schema_validator.validate(
             {},

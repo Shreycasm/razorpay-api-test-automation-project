@@ -10,11 +10,15 @@ from razorpay.models.response.errors import ErrorResponse
 from tests.test_data.error_response import valid_error_response
 
 
+pytestmark = pytest.mark.unit
+
+
 @pytest.fixture(scope="module")
 def error_response_fixture() -> dict[str, Any]:
     return valid_error_response()
 
 
+@pytest.mark.positive
 def test_validate_error_response_success(
     error_response_fixture: dict[str, Any],
 ) -> None:
@@ -42,6 +46,7 @@ def test_validate_error_response_success(
         "metadata",
     ],
 )
+@pytest.mark.negative
 def test_validate_error_response_missing_field(
     error_response_fixture: dict[str, Any],
     field: str,
@@ -58,6 +63,7 @@ def test_validate_error_response_missing_field(
     assert error["type"] == "missing"
 
 
+@pytest.mark.negative
 def test_validate_error_response_missing_error() -> None:
     payload: dict[str, Any] = {}
 
@@ -81,6 +87,7 @@ def test_validate_error_response_missing_error() -> None:
         ("metadata", "invalid"),
     ],
 )
+@pytest.mark.negative
 def test_validate_error_response_invalid_field_type(
     error_response_fixture: dict[str, Any],
     field: str,
@@ -97,6 +104,7 @@ def test_validate_error_response_invalid_field_type(
     assert error["loc"] == ("error", field)
 
 
+@pytest.mark.positive
 def test_validate_error_response_ignores_extra_fields(
     error_response_fixture: dict[str, Any],
 ) -> None:
@@ -111,6 +119,7 @@ def test_validate_error_response_ignores_extra_fields(
     assert not hasattr(response.error, "unexpected")
 
 
+@pytest.mark.positive
 def test_validate_error_response_with_metadata(
     error_response_fixture: dict[str, Any],
 ) -> None:
@@ -136,6 +145,7 @@ def test_validate_error_response_with_metadata(
         123,
     ],
 )
+@pytest.mark.negative
 def test_validate_error_response_invalid_root_input(
     payload: Any,
 ) -> None:

@@ -8,6 +8,10 @@ from razorpay.validators.schema_validator import SchemaValidator
 from tests.constants import ERROR_SCHEMA, ORDER_LIST_SCHEMA
 
 
+pytestmark = pytest.mark.integration
+
+
+@pytest.mark.positive
 def test_list_orders_success_with_no_query_params(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -25,6 +29,7 @@ def test_list_orders_success_with_no_query_params(
     )
 
 
+@pytest.mark.positive
 @pytest.mark.parametrize(
     "authorized",
     [0, 1],
@@ -47,6 +52,7 @@ def test_list_orders_valid_authorized_param(
     )
 
 
+@pytest.mark.positive
 @pytest.mark.parametrize(
     "count",
     [1, 10, 100],
@@ -70,6 +76,7 @@ def test_list_orders_valid_count_param(
     )
 
 
+@pytest.mark.positive
 @pytest.mark.parametrize(
     "skip",
     [1, 10, 100],
@@ -92,6 +99,7 @@ def test_list_orders_valid_skip_param(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_valid_receipt_param(
     create_valid_order_dict: dict[str, Any],
     orders_api: OrdersApi,
@@ -117,6 +125,7 @@ def test_list_orders_valid_receipt_param(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_valid_from_param(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -141,6 +150,7 @@ def test_list_orders_valid_from_param(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_valid_to_param(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -165,6 +175,7 @@ def test_list_orders_valid_to_param(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_with_all_valid_params(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -194,6 +205,7 @@ def test_list_orders_with_all_valid_params(
     )
 
 
+@pytest.mark.positive
 @pytest.mark.parametrize(
     "count",
     [1, 5, 15, 100],
@@ -217,6 +229,7 @@ def test_list_orders_respects_count(
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_count",
     [
@@ -246,6 +259,7 @@ def test_list_orders_invalid_count(
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_skip",
     [
@@ -272,6 +286,7 @@ def test_list_orders_invalid_skip(
     )
 
 
+@pytest.mark.negative
 def test_list_orders_negative_skip_sandbox_behavior(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -289,6 +304,7 @@ def test_list_orders_negative_skip_sandbox_behavior(
     )
 
 
+@pytest.mark.positive
 def test_list_orders_reversed_date_range(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -311,6 +327,7 @@ def test_list_orders_reversed_date_range(
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_from",
     [
@@ -338,6 +355,7 @@ def test_list_orders_invalid_from(
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_to",
     [
@@ -365,12 +383,15 @@ def test_list_orders_invalid_to(
     )
 
 
+@pytest.mark.negative
 def test_list_order_with_invalid_param(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
 ) -> None:
 
-    response = orders_api.list_orders_raw(invalid_parameter=1)
+    response = orders_api.list_orders_raw(
+        invalid_parameter=1,
+    )
 
     assert response.status_code == 400
 
@@ -380,6 +401,7 @@ def test_list_order_with_invalid_param(
     )
 
 
+@pytest.mark.negative
 @pytest.mark.parametrize(
     "invalid_authorized",
     [

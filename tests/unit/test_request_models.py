@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-from typing import Any
 from copy import deepcopy
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
 from razorpay.enums.currency import Currency
-from razorpay.models.requests.orders import CreateOrderRequest, UpdateOrderRequest
+from razorpay.models.requests.orders import (
+    CreateOrderRequest,
+    UpdateOrderRequest,
+)
+
+
+pytestmark = pytest.mark.unit
 
 
 def build_request(
@@ -20,10 +26,10 @@ def build_request(
     return request
 
 
+@pytest.mark.positive
 def test_validate_create_order_request_success(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
-
     request = CreateOrderRequest(**create_valid_order_dict)
 
     assert request.amount == 100
@@ -33,6 +39,7 @@ def test_validate_create_order_request_success(
     assert request.notes.get("framework") == create_valid_order_dict["notes"]["framework"]
 
 
+@pytest.mark.positive
 def test_create_order_request_to_api_payload_excludes_none(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -57,6 +64,7 @@ def test_create_order_request_to_api_payload_excludes_none(
         "currency",
     ],
 )
+@pytest.mark.negative
 def test_validate_create_order_request_missing_required_field(
     create_valid_order_dict: dict[str, Any],
     field: str,
@@ -73,7 +81,6 @@ def test_validate_create_order_request_missing_required_field(
     assert error["type"] == "missing"
 
 
-
 @pytest.mark.parametrize(
     "amount",
     [
@@ -82,6 +89,7 @@ def test_validate_create_order_request_missing_required_field(
         99,
     ],
 )
+@pytest.mark.negative
 def test_validate_create_order_request_invalid_amount(
     create_valid_order_dict: dict[str, Any],
     amount: int,
@@ -109,6 +117,7 @@ def test_validate_create_order_request_invalid_amount(
         None,
     ],
 )
+@pytest.mark.negative
 def test_validate_create_order_request_invalid_currency(
     create_valid_order_dict: dict[str, Any],
     currency: Any,
@@ -126,6 +135,7 @@ def test_validate_create_order_request_invalid_currency(
     assert error["loc"] == ("currency",)
 
 
+@pytest.mark.negative
 def test_validate_create_order_request_receipt_too_long(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -143,6 +153,7 @@ def test_validate_create_order_request_receipt_too_long(
     assert error["type"] == "string_too_long"
 
 
+@pytest.mark.negative
 def test_validate_create_order_request_notes_more_than_15(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -163,6 +174,7 @@ def test_validate_create_order_request_notes_more_than_15(
     assert error["type"] == "too_long"
 
 
+@pytest.mark.negative
 def test_validate_create_order_request_notes_key_too_long(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -183,6 +195,7 @@ def test_validate_create_order_request_notes_key_too_long(
     assert error["type"] == "string_too_long"
 
 
+@pytest.mark.negative
 def test_validate_create_order_request_notes_value_too_long(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -202,6 +215,7 @@ def test_validate_create_order_request_notes_value_too_long(
     assert error["type"] == "too_long"
 
 
+@pytest.mark.negative
 def test_validate_create_order_request_extra_field(
     create_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -219,6 +233,7 @@ def test_validate_create_order_request_extra_field(
     assert error["type"] == "extra_forbidden"
 
 
+@pytest.mark.positive
 def test_validate_update_order_request_success(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -229,6 +244,7 @@ def test_validate_update_order_request_success(
     assert request.notes["framework"] == update_valid_order_dict["notes"]["framework"]
 
 
+@pytest.mark.positive
 def test_update_order_request_to_api_payload(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -239,11 +255,12 @@ def test_update_order_request_to_api_payload(
     assert payload == {
         "notes": {
             "source": update_valid_order_dict["notes"]["source"],
-            "framework": update_valid_order_dict["notes"]["framework"]
+            "framework": update_valid_order_dict["notes"]["framework"],
         },
     }
 
 
+@pytest.mark.negative
 def test_validate_update_order_request_missing_notes(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -259,6 +276,7 @@ def test_validate_update_order_request_missing_notes(
     assert error["type"] == "missing"
 
 
+@pytest.mark.negative
 def test_validate_update_order_request_notes_more_than_15(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -279,6 +297,7 @@ def test_validate_update_order_request_notes_more_than_15(
     assert error["type"] == "too_long"
 
 
+@pytest.mark.negative
 def test_validate_update_order_request_notes_key_too_long(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -299,6 +318,7 @@ def test_validate_update_order_request_notes_key_too_long(
     assert error["type"] == "string_too_long"
 
 
+@pytest.mark.negative
 def test_validate_update_order_request_notes_value_too_long(
     update_valid_order_dict: dict[str, Any],
 ) -> None:
@@ -318,6 +338,7 @@ def test_validate_update_order_request_notes_value_too_long(
     assert error["type"] == "too_long"
 
 
+@pytest.mark.negative
 def test_validate_update_order_request_extra_field(
     update_valid_order_dict: dict[str, Any],
 ) -> None:

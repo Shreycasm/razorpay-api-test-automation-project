@@ -12,6 +12,10 @@ from razorpay.models.response.orders import (
 )
 
 
+pytestmark = pytest.mark.unit
+
+
+@pytest.mark.positive
 def test_validate_order_response_success(
     valid_order_response_dict: dict[str, Any],
 ) -> None:
@@ -39,6 +43,7 @@ def test_validate_order_response_success(
         "notes",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_response_missing_field(
     valid_order_response_dict: dict[str, Any],
     field: str,
@@ -72,6 +77,7 @@ def test_validate_order_response_missing_field(
         ("notes", 123),
     ],
 )
+@pytest.mark.negative
 def test_validate_order_response_invalid_field_type(
     valid_order_response_dict: dict[str, Any],
     field: str,
@@ -97,6 +103,7 @@ def test_validate_order_response_invalid_field_type(
         "offer_id",
     ],
 )
+@pytest.mark.positive
 def test_validate_order_response_nullable_field(
     valid_order_response_dict: dict[str, Any],
     field: str,
@@ -109,6 +116,7 @@ def test_validate_order_response_nullable_field(
     assert getattr(order, field) is None
 
 
+@pytest.mark.positive
 def test_validate_order_response_empty_notes(
     valid_order_response_dict: dict[str, Any],
 ) -> None:
@@ -120,6 +128,7 @@ def test_validate_order_response_empty_notes(
     assert order.notes == []
 
 
+@pytest.mark.positive
 def test_validate_order_response_notes_dict(
     valid_order_response_dict: dict[str, Any],
 ) -> None:
@@ -135,6 +144,7 @@ def test_validate_order_response_notes_dict(
     assert order.notes == response["notes"]
 
 
+@pytest.mark.positive
 def test_validate_order_response_ignores_extra_field(
     valid_order_response_dict: dict[str, Any],
 ) -> None:
@@ -146,6 +156,7 @@ def test_validate_order_response_ignores_extra_field(
     assert not hasattr(order, "unexpected")
 
 
+@pytest.mark.positive
 def test_validate_order_list_response_success(
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
@@ -166,6 +177,7 @@ def test_validate_order_list_response_success(
         "items",
     ],
 )
+@pytest.mark.negative
 def test_validate_order_list_response_missing_field(
     valid_list_order_response_dict: dict[str, Any],
     field: str,
@@ -190,6 +202,7 @@ def test_validate_order_list_response_missing_field(
         ("items", "invalid"),
     ],
 )
+@pytest.mark.negative
 def test_validate_order_list_response_invalid_field_type(
     valid_list_order_response_dict: dict[str, Any],
     field: str,
@@ -206,6 +219,7 @@ def test_validate_order_list_response_invalid_field_type(
     assert error["loc"][0] == field
 
 
+@pytest.mark.positive
 def test_validate_order_list_response_empty_items(
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
@@ -217,6 +231,7 @@ def test_validate_order_list_response_empty_items(
     assert order_list.items == []
 
 
+@pytest.mark.negative
 def test_validate_order_list_response_invalid_nested_order(
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
@@ -232,6 +247,7 @@ def test_validate_order_list_response_invalid_nested_order(
     assert error["loc"][0] == "items"
 
 
+@pytest.mark.positive
 def test_validate_order_list_response_ignores_extra_field(
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:
@@ -243,6 +259,7 @@ def test_validate_order_list_response_ignores_extra_field(
     assert not hasattr(order_list, "unexpected")
 
 
+@pytest.mark.positive
 def test_validate_order_list_response_nested_extra_field(
     valid_list_order_response_dict: dict[str, Any],
 ) -> None:

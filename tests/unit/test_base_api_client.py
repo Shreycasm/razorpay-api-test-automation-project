@@ -9,7 +9,10 @@ from requests.auth import HTTPBasicAuth
 
 from razorpay.api.base_api import BaseAPIClient
 from razorpay.config.settings import settings
-from razorpay.exception.api import ApiError 
+from razorpay.exception.api import ApiError
+
+
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture
@@ -26,11 +29,12 @@ def mock_response() -> MagicMock:
     response = MagicMock()
     response.status_code = 200
     response.ok = True
+
     return response
 
 
+@pytest.mark.positive
 def test_session_uses_basic_auth() -> None:
-
     base_api_client = BaseAPIClient()
 
     auth = base_api_client._session.auth
@@ -42,8 +46,8 @@ def test_session_uses_basic_auth() -> None:
     base_api_client.close()
 
 
+@pytest.mark.positive
 def test_session_has_default_headers() -> None:
-
     base_api_client = BaseAPIClient()
 
     headers = base_api_client._session.headers
@@ -54,6 +58,7 @@ def test_session_has_default_headers() -> None:
     base_api_client.close()
 
 
+@pytest.mark.positive
 def test_retry_configuration() -> None:
     base_api_client = BaseAPIClient()
 
@@ -82,6 +87,7 @@ def test_retry_configuration() -> None:
     assert retry.raise_on_status is False
 
 
+@pytest.mark.positive
 def test_retry_respects_retry_after_header() -> None:
     base_api_client = BaseAPIClient()
 
@@ -99,20 +105,21 @@ def test_retry_respects_retry_after_header() -> None:
         "PATCH",
     ],
 )
+@pytest.mark.positive
 def test_non_idempotent_methods_are_not_retried(
     base_api_client: BaseAPIClient,
     method: str,
 ) -> None:
-
     adapter = base_api_client._session.get_adapter("https://")
     retry = adapter.max_retries
 
     assert method not in retry.allowed_methods
 
 
-def test_request_builds_url_and_uses_default_timeout( 
-    mock_response: MagicMock
-    ) -> None:
+@pytest.mark.positive
+def test_request_builds_url_and_uses_default_timeout(
+    mock_response: MagicMock,
+) -> None:
     base_api_client = BaseAPIClient()
 
     base_api_client._session.request = MagicMock(
@@ -133,10 +140,10 @@ def test_request_builds_url_and_uses_default_timeout(
     )
 
 
-
+@pytest.mark.positive
 def test_request_normalizes_endpoint(
     mock_response: MagicMock,
-    ) -> None:
+) -> None:
     base_api_client = BaseAPIClient()
 
     base_api_client._session.request = MagicMock(
@@ -155,9 +162,10 @@ def test_request_normalizes_endpoint(
     )
 
 
+@pytest.mark.positive
 def test_request_preserves_custom_timeout(
     mock_response: MagicMock,
-    ) -> None:
+) -> None:
     base_api_client = BaseAPIClient()
 
     base_api_client._session.request = MagicMock(
@@ -177,14 +185,11 @@ def test_request_preserves_custom_timeout(
     )
 
 
+@pytest.mark.positive
 def test_request_passes_query_params(
     mock_response: MagicMock,
-    ) -> None:
+) -> None:
     base_api_client = BaseAPIClient()
-
-    base_api_client._session.request = MagicMock(
-        return_value=mock_response
-    )
 
     base_api_client._session.request = MagicMock(
         return_value=mock_response
@@ -209,6 +214,7 @@ def test_request_passes_query_params(
     )
 
 
+@pytest.mark.positive
 def test_request_reraises_timeout() -> None:
     base_api_client = BaseAPIClient()
 
@@ -223,6 +229,7 @@ def test_request_reraises_timeout() -> None:
         )
 
 
+@pytest.mark.positive
 def test_request_reraises_connection_error() -> None:
     base_api_client = BaseAPIClient()
 
@@ -239,6 +246,7 @@ def test_request_reraises_connection_error() -> None:
         )
 
 
+@pytest.mark.positive
 def test_request_reraises_generic_request_error() -> None:
     base_api_client = BaseAPIClient()
 
@@ -255,6 +263,7 @@ def test_request_reraises_generic_request_error() -> None:
         )
 
 
+@pytest.mark.positive
 def test_raise_for_api_error_returns_for_successful_response() -> None:
     base_api_client = BaseAPIClient()
 
@@ -268,6 +277,7 @@ def test_raise_for_api_error_returns_for_successful_response() -> None:
     base_api_client.close()
 
 
+@pytest.mark.positive
 def test_raise_for_api_error_raises_api_error(
     error_response_fixture: dict[str, Any],
 ) -> None:
@@ -291,10 +301,10 @@ def test_raise_for_api_error_raises_api_error(
     base_api_client.close()
 
 
+@pytest.mark.positive
 def test_raise_for_api_error_handles_invalid_error_response(
     base_api_client: BaseAPIClient,
 ) -> None:
-
     response = MagicMock()
     response.ok = False
     response.status_code = 500
@@ -316,10 +326,10 @@ def test_raise_for_api_error_handles_invalid_error_response(
     }
 
 
+@pytest.mark.positive
 def test_raise_for_api_error_handles_non_json_response(
     base_api_client: BaseAPIClient,
 ) -> None:
-
     response = MagicMock()
     response.ok = False
     response.status_code = 502
@@ -339,10 +349,10 @@ def test_raise_for_api_error_handles_non_json_response(
     assert error.response_data == {}
 
 
+@pytest.mark.positive
 def test_raise_for_api_error_uses_default_message(
     base_api_client: BaseAPIClient,
 ) -> None:
-
     response = MagicMock()
     response.ok = False
     response.status_code = 500
