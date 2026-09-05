@@ -107,7 +107,10 @@ jobs:
           path: reports/allure-results
 
       - name: Install Allure CLI
-        run: npm install -g allure
+        run: |
+          curl -o allure-2.46.1.tgz -OLs https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.46.1/allure-commandline-2.46.1.tgz
+          tar -xzf allure-2.46.1.tgz
+          echo "$PWD/allure-2.46.1/bin" >> "$GITHUB_PATH"
 
       - name: Generate Allure report
         run: allure generate reports/allure-results -o reports/allure-report
