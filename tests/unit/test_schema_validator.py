@@ -15,7 +15,6 @@ from tests.constants import (
     ORDER_SCHEMA,
 )
 
-
 pytestmark = pytest.mark.unit
 
 

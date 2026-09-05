@@ -8,7 +8,6 @@ from pydantic import ValidationError
 
 from razorpay.config.settings import Settings
 
-
 pytestmark = pytest.mark.unit
 
 

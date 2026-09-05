@@ -3,7 +3,8 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from razorpay.enums.currency import Currency
-from razorpay.models.types import Amount, Receipt, Notes
+from razorpay.models.types import Amount, Notes, Receipt
+
 
 class CreateOrderRequest(BaseModel):
 

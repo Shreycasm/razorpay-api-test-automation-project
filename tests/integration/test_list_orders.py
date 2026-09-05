@@ -1,13 +1,11 @@
 from typing import Any
 
-import pytest
 import allure
+import pytest
 
 from razorpay.api.orders_api import OrdersApi
 from razorpay.validators.schema_validator import SchemaValidator
-
 from tests.constants import ERROR_SCHEMA, ORDER_LIST_SCHEMA
-
 
 pytestmark = pytest.mark.integration
 
@@ -124,8 +122,6 @@ def test_list_orders_valid_receipt_param(
     assert create_response.http.status_code == 200
 
     receipt = create_response.data.receipt
-
-    time.sleep(15)
 
     response = orders_api.list_orders(
         receipt=receipt,

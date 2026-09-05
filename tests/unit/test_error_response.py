@@ -10,7 +10,6 @@ from pydantic import ValidationError
 from razorpay.models.response.errors import ErrorResponse
 from tests.test_data.error_response import valid_error_response
 
-
 pytestmark = pytest.mark.unit
 
 

@@ -9,9 +9,37 @@ on:
     branches:
       - main
 
+  schedule:
+    - cron: "30 3 * * 1"
+
 jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Run Ruff
+        run: uv run ruff check .
+
   unit-tests:
     runs-on: ubuntu-latest
+    needs: lint
 
     steps:
       - name: Checkout repository
@@ -34,7 +62,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Run unit tests
-        run: uv run pytest -m unit --cov=src/razorpay --cov-report=html --alluredir=reports/allure-results
+        run: uv run pytest -m unit --cov=src/razorpay --cov-report=html --junitxml=reports/unit-results.xml --alluredir=reports/allure-results
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
@@ -43,6 +71,7 @@ jobs:
           path: reports/coverage
 
       - name: Upload unit Allure results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-allure-results
@@ -50,6 +79,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-latest
+    needs: lint
     env:
       RAZORPAY_API_KEY: ${{ secrets.RAZORPAY_API_KEY }}
       RAZORPAY_API_KEY_SECRET: ${{ secrets.RAZORPAY_API_KEY_SECRET }}
@@ -78,9 +108,10 @@ jobs:
         run: cp .env.example .env
 
       - name: Run integration tests
-        run: uv run pytest -m integration -n 6 --alluredir=reports/allure-results
+        run: uv run pytest -m integration -n 6 --junitxml=reports/integration-results.xml --alluredir=reports/allure-results
 
       - name: Upload integration Allure results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: integration-allure-results

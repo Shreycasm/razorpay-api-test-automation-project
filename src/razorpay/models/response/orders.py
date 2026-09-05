@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
+
 class OrderResponse(BaseModel):
 
     model_config = ConfigDict(

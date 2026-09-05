@@ -12,7 +12,6 @@ from razorpay.api.base_api import BaseAPIClient
 from razorpay.config.settings import settings
 from razorpay.exception.api import ApiError
 
-
 pytestmark = pytest.mark.unit
 
 

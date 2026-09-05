@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from razorpay.enums.currency import Currency
 
-
 DEFAULT_AMOUNT=100
 DEFAULT_CURRENCY=Currency.INR
 

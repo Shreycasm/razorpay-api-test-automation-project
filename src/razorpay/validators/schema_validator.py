@@ -7,6 +7,18 @@ from jsonschema import Draft202012Validator
 from referencing import Registry, Resource
 
 
+@cache
+def _load_schema(
+    schema_directory: Path,
+    schema_path: Path,
+) -> dict[str, Any]:
+
+    schema_path = schema_directory / schema_path
+
+    with schema_path.open(encoding="utf-8") as file:
+        return json.load(file)
+
+
 class SchemaValidator:
 
     def __init__(
@@ -18,17 +30,6 @@ class SchemaValidator:
         self._registry = Registry(retrieve=self._retrieve_schema)
         self._current_schema_dir: Path | None = None
 
-    @cache
-    def _load_schema(
-        self,
-        schema_path: Path,
-    ) -> dict[str, Any]:
-
-        schema_path = self._schema_directory / schema_path
-
-        with schema_path.open(encoding="utf-8") as file:
-            return json.load(file)
-
     def _retrieve_schema(
         self,
         uri: str,
@@ -39,9 +40,13 @@ class SchemaValidator:
                 "Current schema directory has not been set."
             )
 
-        schema_path = (self._current_schema_dir / uri)
+        schema_path = self._current_schema_dir / uri
         relative_path = schema_path.relative_to(self._schema_directory)
-        schema = self._load_schema(relative_path)
+
+        schema = _load_schema(
+            self._schema_directory,
+            relative_path,
+        )
 
         return Resource.from_contents(schema)
 
@@ -51,8 +56,9 @@ class SchemaValidator:
         schema_name: Path,
     ) -> None:
 
-        schema = self._load_schema(
-            schema_name
+        schema = _load_schema(
+            self._schema_directory,
+            schema_name,
         )
 
         self._current_schema_dir = (

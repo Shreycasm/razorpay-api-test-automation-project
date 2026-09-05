@@ -1,13 +1,11 @@
 from typing import Any
 
-import pytest
 import allure
+import pytest
 
 from razorpay.api.orders_api import OrdersApi
 from razorpay.validators.schema_validator import SchemaValidator
-
 from tests.constants import ERROR_SCHEMA, ORDER_SCHEMA
-
 
 pytestmark = pytest.mark.integration
 

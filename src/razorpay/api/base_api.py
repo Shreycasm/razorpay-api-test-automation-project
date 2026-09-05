@@ -10,7 +10,6 @@ from razorpay.exception.api import ApiError
 from razorpay.models.response.errors import ErrorResponse
 from razorpay.utils.logger import logger
 
-
 DEFAULT_RETRIES = 3
 ALLOWED_METHODS = (
     "GET",
