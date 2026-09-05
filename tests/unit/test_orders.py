@@ -1,6 +1,7 @@
 from typing import Any
 from unittest.mock import MagicMock
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -16,6 +17,13 @@ from razorpay.models.response.orders import (
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_orders_api_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Orders API")
 
 
 def mock_response(

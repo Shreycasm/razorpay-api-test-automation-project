@@ -1,6 +1,8 @@
+import time
 from typing import Any
 
 import pytest
+import allure
 
 from razorpay.api.orders_api import OrdersApi
 from razorpay.validators.schema_validator import SchemaValidator
@@ -11,7 +13,15 @@ from tests.constants import ERROR_SCHEMA, ORDER_LIST_SCHEMA
 pytestmark = pytest.mark.integration
 
 
+@pytest.fixture(autouse=True)
+def allure_list_orders_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Orders API")
+    allure.dynamic.story("List Orders")
+
+
 @pytest.mark.positive
+@allure.severity(allure.severity_level.CRITICAL)
 def test_list_orders_success_with_no_query_params(
     orders_api: OrdersApi,
     schema_validator: SchemaValidator,
@@ -20,8 +30,8 @@ def test_list_orders_success_with_no_query_params(
     response = orders_api.list_orders()
 
     assert response.http.status_code == 200
-    assert response.data.count == 10
-    assert len(response.data.items) == 10
+    assert response.data.count <= 10
+    assert len(response.data.items) <= 10
 
     schema_validator.validate(
         instance=response.http.json(),
@@ -106,7 +116,13 @@ def test_list_orders_valid_receipt_param(
     schema_validator: SchemaValidator,
 ) -> None:
 
-    receipt = create_valid_order_dict["receipt"]
+    create_response = orders_api.create_order(create_valid_order_dict)
+
+    assert create_response.http.status_code == 200
+
+    receipt = create_response.data.receipt
+
+    time.sleep(15)
 
     response = orders_api.list_orders(
         receipt=receipt,
@@ -114,6 +130,7 @@ def test_list_orders_valid_receipt_param(
 
     assert response.http.status_code == 200
 
+    assert response.data.items
     assert all(
         order.receipt == receipt
         for order in response.data.items

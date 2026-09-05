@@ -2,6 +2,7 @@ from copy import deepcopy
 from typing import Any
 
 import pytest
+import allure
 
 from razorpay.api.orders_api import OrdersApi
 from razorpay.enums.currency import Currency
@@ -13,7 +14,15 @@ from tests.constants import ERROR_SCHEMA, ORDER_SCHEMA
 pytestmark = pytest.mark.integration
 
 
+@pytest.fixture(autouse=True)
+def allure_create_order_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Orders API")
+    allure.dynamic.story("Create Order")
+
+
 @pytest.mark.positive
+@allure.severity(allure.severity_level.CRITICAL)
 def test_create_order_success(
     orders_api: OrdersApi,
     create_valid_order_dict: dict[str, Any],

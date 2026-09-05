@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -9,6 +10,13 @@ from razorpay.config.settings import Settings
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_settings_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Settings")
 
 
 @pytest.mark.positive

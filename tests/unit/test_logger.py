@@ -1,11 +1,19 @@
 import json
 
+import allure
 import pytest
 
 from razorpay.utils.logger import LOG_FILE, LOG_DIR, logger
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_logger_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Logger")
 
 
 @pytest.mark.positive

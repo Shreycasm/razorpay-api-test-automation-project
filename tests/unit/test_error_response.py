@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -11,6 +12,13 @@ from tests.test_data.error_response import valid_error_response
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_error_response_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Error Response Model")
 
 
 @pytest.fixture(scope="module")

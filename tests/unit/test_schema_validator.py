@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+import allure
 import pytest
 from jsonschema import ValidationError
 
@@ -16,6 +17,13 @@ from tests.constants import (
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_schema_validator_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Schema Validator")
 
 
 @pytest.mark.positive

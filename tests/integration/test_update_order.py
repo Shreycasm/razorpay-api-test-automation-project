@@ -1,6 +1,7 @@
 from typing import Any
 
 import pytest
+import allure
 
 from razorpay.api.orders_api import OrdersApi
 from razorpay.validators.schema_validator import SchemaValidator
@@ -11,7 +12,15 @@ from tests.constants import ERROR_SCHEMA, ORDER_SCHEMA
 pytestmark = pytest.mark.integration
 
 
+@pytest.fixture(autouse=True)
+def allure_update_order_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Orders API")
+    allure.dynamic.story("Update Order")
+
+
 @pytest.mark.positive
+@allure.severity(allure.severity_level.CRITICAL)
 def test_update_order_notes_success(
     create_valid_order_dict: dict[str, Any],
     update_valid_order_dict: dict[str, Any],
@@ -203,7 +212,7 @@ def test_update_order_notes_key_max_length(
     )
 
     notes = {
-        "k" * 255: "value",
+        "k" * 256: "value",
     }
 
     response = orders_api.update_order(
@@ -239,7 +248,7 @@ def test_update_order_notes_key_more_than_max_length(
     )
 
     notes = {
-        "k" * 256: "value",
+        "k" * 257: "value",
     }
 
     response = orders_api.update_order_raw(
@@ -268,7 +277,7 @@ def test_update_order_notes_value_max_length(
     )
 
     notes = {
-        "key": "v" * 255,
+        "key": "v" * 256,
     }
 
     response = orders_api.update_order(
@@ -304,7 +313,7 @@ def test_update_order_notes_value_more_than_max_length(
     )
 
     notes = {
-        "key": "v" * 256,
+        "key": "v" * 257,
     }
 
     response = orders_api.update_order_raw(

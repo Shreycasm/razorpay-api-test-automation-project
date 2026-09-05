@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
+import allure
 import pytest
 from pydantic import ValidationError
 
@@ -13,6 +14,13 @@ from razorpay.models.response.orders import (
 
 
 pytestmark = pytest.mark.unit
+
+
+@pytest.fixture(autouse=True)
+def allure_response_models_labels() -> None:
+    allure.dynamic.epic("Razorpay API")
+    allure.dynamic.feature("Framework")
+    allure.dynamic.story("Response Models")
 
 
 @pytest.mark.positive

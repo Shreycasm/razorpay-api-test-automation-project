@@ -5,11 +5,19 @@ description = "A scalable API automation framework for Razorpay APIs."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "allure-pytest>=2.16.0",
     "jsonschema>=4.26.0",
     "pydantic-settings>=2.15.0",
     "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
     "requests>=2.34.2",
     "structlog>=26.1.0",
+]
+
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=7.1.0",
 ]
 
 
@@ -37,3 +45,16 @@ markers = [
     "positive: Tests covering valid inputs and expected successful behavior",
     "negative: Tests covering invalid inputs and expected failure behavior",
 ]
+
+
+# ────────────────────────── Coverage configuration ──────────────────────────
+[tool.coverage.run]
+source = ["src/razorpay"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.coverage.html]
+directory = "reports/coverage"
