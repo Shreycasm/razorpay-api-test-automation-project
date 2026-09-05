@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     )
 
     integration_post_delay_seconds: float = Field(
-        default=0,
+        default=1.0,
         ge=0,
         alias="INTEGRATION_POST_DELAY_SECONDS"
     )
